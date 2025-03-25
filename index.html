@@ -1,0 +1,1783 @@
+            const layout = {
+                title: `Rating Curve for ${diameter}ft Circular Pipe`,
+                grid: {rows: 1, columns: 2, pattern: 'independent'},
+                showlegend: false,
+                height: 400
+            };
+            
+            const trace1 = {
+                x: flows,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Flow',
+                xaxis: 'x',
+                yaxis: 'y',
+                line: {color: 'blue', width: 2}
+            };
+            
+            const trace2 = {
+                x: velocities,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Velocity',
+                xaxis: 'x2',
+                yaxis: 'y2',
+                line: {color: 'red', width: 2}
+            };
+            
+            const config = {
+                responsive: true
+            };
+            
+            const data = [trace1, trace2];
+            
+            const annotations = [
+                {
+                    xref: 'x domain',
+                    yref: 'y domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Flow (cfs)',
+                    showarrow: false
+                },
+                {
+                    xref: 'x2 domain',
+                    yref: 'y2 domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Velocity (ft/s)',
+                    showarrow: false
+                },
+                {
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: -0.05,
+                    y: 0.5,
+                    text: 'Depth (ft)',
+                    textangle: -90,
+                    showarrow: false
+                }
+            ];
+            
+            layout.annotations = annotations;
+            layout.xaxis = {title: 'Flow (cfs)', domain: [0, 0.45]};
+            layout.yaxis = {title: 'Depth (ft)'};
+            layout.xaxis2 = {title: 'Velocity (ft/s)', domain: [0.55, 1]};
+            layout.yaxis2 = {title: 'Depth (ft)', side: 'right'};
+            
+            Plotly.newPlot('pipe-plot', data, layout, config);
+        }
+        
+        function plotRatingCurveBox(width, height, slope, roughness, maxDepth = null) {
+            if (maxDepth === null) {
+                maxDepth = height;
+            }
+            
+            const depths = [];
+            const flows = [];
+            const velocities = [];
+            
+            const numPoints = 50;
+            const depthStep = maxDepth / numPoints;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const depth = (i + 1) * depthStep;
+                depths.push(depth);
+                
+                const result = calculateBoxCulvertFlow(width, height, slope, roughness, depth);
+                flows.push(result.flowCfs);
+                velocities.push(result.velocityFps);
+            }
+            
+            const layout = {
+                title: `Rating Curve for ${width}ft x ${height}ft Box Culvert`,
+                grid: {rows: 1, columns: 2, pattern: 'independent'},
+                showlegend: false,
+                height: 400
+            };
+            
+            const trace1 = {
+                x: flows,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Flow',
+                xaxis: 'x',
+                yaxis: 'y',
+                line: {color: 'blue', width: 2}
+            };
+            
+            const trace2 = {
+                x: velocities,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Velocity',
+                xaxis: 'x2',
+                yaxis: 'y2',
+                line: {color: 'red', width: 2}
+            };
+            
+            const config = {
+                responsive: true
+            };
+            
+            const data = [trace1, trace2];
+            
+            const annotations = [
+                {
+                    xref: 'x domain',
+                    yref: 'y domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Flow (cfs)',
+                    showarrow: false
+                },
+                {
+                    xref: 'x2 domain',
+                    yref: 'y2 domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Velocity (ft/s)',
+                    showarrow: false
+                },
+                {
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: -0.05,
+                    y: 0.5,
+                    text: 'Depth (ft)',
+                    textangle: -90,
+                    showarrow: false
+                }
+            ];
+            
+            layout.annotations = annotations;
+            layout.xaxis = {title: 'Flow (cfs)', domain: [0, 0.45]};
+            layout.yaxis = {title: 'Depth (ft)'};
+            layout.xaxis2 = {title: 'Velocity (ft/s)', domain: [0.55, 1]};
+            layout.yaxis2 = {title: 'Depth (ft)', side: 'right'};
+            
+            Plotly.newPlot('box-plot', data, layout, config);
+        }
+        
+        function plotRatingCurveTrapezoidal(bottomWidth, sideSlope, slope, roughness, maxDepth = 20) {
+            const depths = [];
+            const flows = [];
+            const velocities = [];
+            const froudeNumbers = [];
+            
+            const numPoints = 50;
+            const depthStep = maxDepth / numPoints;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const depth = (i + 1) * depthStep;
+                depths.push(depth);
+                
+                const result = calculateTrapezoidalChannelFlow(bottomWidth, sideSlope, slope, roughness, depth);
+                flows.push(result.flowCfs);
+                velocities.push(result.velocityFps);
+                froudeNumbers.push(result.froudeNumber);
+            }
+            
+            const layout = {
+                title: `Rating Curve for Trapezoidal Channel (Bottom Width = ${bottomWidth}ft, Side Slope = ${sideSlope}:1)`,
+                grid: {rows: 1, columns: 3, pattern: 'independent'},
+                showlegend: false,
+                height: 400
+            };
+            
+            const trace1 = {
+                x: flows,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Flow',
+                xaxis: 'x',
+                yaxis: 'y',
+                line: {color: 'blue', width: 2}
+            };
+            
+            const trace2 = {
+                x: velocities,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Velocity',
+                xaxis: 'x2',
+                yaxis: 'y2',
+                line: {color: 'red', width: 2}
+            };
+            
+            const trace3 = {
+                x: froudeNumbers,
+                y: depths,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Froude Number',
+                xaxis: 'x3',
+                yaxis: 'y3',
+                line: {color: 'green', width: 2}
+            };
+            
+            const trace4 = {
+                x: [1, 1],
+                y: [0, maxDepth],
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Critical Flow',
+                xaxis: 'x3',
+                yaxis: 'y3',
+                line: {color: 'black', width: 1, dash: 'dash'}
+            };
+            
+            const config = {
+                responsive: true
+            };
+            
+            const data = [trace1, trace2, trace3, trace4];
+            
+            const annotations = [
+                {
+                    xref: 'x domain',
+                    yref: 'y domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Flow (cfs)',
+                    showarrow: false
+                },
+                {
+                    xref: 'x2 domain',
+                    yref: 'y2 domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Velocity (ft/s)',
+                    showarrow: false
+                },
+                {
+                    xref: 'x3 domain',
+                    yref: 'y3 domain',
+                    x: 0.5,
+                    y: -0.15,
+                    text: 'Froude Number',
+                    showarrow: false
+                },
+                {
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: -0.05,
+                    y: 0.5,
+                    text: 'Depth (ft)',
+                    textangle: -90,
+                    showarrow: false
+                }
+            ];
+            
+            layout.annotations = annotations;
+            layout.xaxis = {title: 'Flow (cfs)', domain: [0, 0.3]};
+            layout.yaxis = {title: 'Depth (ft)'};
+            layout.xaxis2 = {title: 'Velocity (ft/s)', domain: [0.35, 0.65]};
+            layout.yaxis2 = {title: 'Depth (ft)', side: 'left'};
+            layout.xaxis3 = {title: 'Froude Number', domain: [0.7, 1]};
+            layout.yaxis3 = {title: 'Depth (ft)', side: 'right'};
+            
+            Plotly.newPlot('channel-plot', data, layout, config);
+        }
+    </script>
+</body>
+</html>            // Get input values
+            const width = parseFloat(document.getElementById('box-width').value);
+            const height = parseFloat(document.getElementById('box-height').value);
+            const slope = parseFloat(document.getElementById('box-slope').value);
+            
+            // Get roughness value
+            let roughness;
+            if (document.getElementById('box-custom-n').checked) {
+                roughness = parseFloat(document.getElementById('box-roughness').value);
+            } else {
+                roughness = ROUGHNESS_COEFFICIENTS[document.getElementById('box-material').value];
+            }
+            
+            // Get calculation type
+            let calcType;
+            document.querySelectorAll('input[name="box-calc-type"]').forEach(radio => {
+                if (radio.checked) {
+                    calcType = radio.value;
+                }
+            });
+            
+            // Calculate and display results
+            const resultsDiv = document.getElementById('box-results');
+            const resultsBody = document.getElementById('box-results-body');
+            const plotDiv = document.getElementById('box-plot');
+            
+            // Clear previous results
+            resultsBody.innerHTML = '';
+            resultsDiv.style.display = 'block';
+            plotDiv.style.display = 'block';
+            
+            let result;
+            if (calcType === 'full-flow') {
+                result = calculateBoxCulvertFlow(width, height, slope, roughness);
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Flow rate:</strong> ${result.flowCfs.toFixed(2)} cfs</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Flow area:</strong> ${result.areaSqft.toFixed(2)} ft²</p>
+                `;
+            } else if (calcType === 'partial-flow') {
+                const normalDepth = parseFloat(document.getElementById('box-depth').value);
+                
+                // Validate depth
+                if (normalDepth > height) {
+                    resultsBody.innerHTML = `<div class="alert alert-danger">Error: Flow depth cannot exceed culvert height.</div>`;
+                    return;
+                }
+                
+                result = calculateBoxCulvertFlow(width, height, slope, roughness, normalDepth);
+                
+                let flowRegime = '';
+                if (result.froudeNumber < 1) {
+                    flowRegime = 'Subcritical';
+                } else if (result.froudeNumber > 1) {
+                    flowRegime = 'Supercritical';
+                } else {
+                    flowRegime = 'Critical';
+                }
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Flow rate:</strong> ${result.flowCfs.toFixed(2)} cfs</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Flow area:</strong> ${result.areaSqft.toFixed(2)} ft²</p>
+                    <p><strong>Percent full:</strong> ${result.percentFull.toFixed(1)}%</p>
+                    <p><strong>Froude number:</strong> ${result.froudeNumber.toFixed(2)}</p>
+                    <p><strong>Flow regime:</strong> ${flowRegime}</p>
+                `;
+            } else if (calcType === 'find-depth') {
+                const targetFlow = parseFloat(document.getElementById('box-target-flow').value);
+                
+                // Check capacity
+                const fullCulvert = calculateBoxCulvertFlow(width, height, slope, roughness);
+                
+                if (targetFlow > fullCulvert.flowCfs) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: Target flow exceeds full culvert capacity (${fullCulvert.flowCfs.toFixed(2)} cfs)</div>
+                    `;
+                    return;
+                }
+                
+                const normalDepth = findNormalDepthBox(width, height, slope, roughness, targetFlow);
+                
+                if (normalDepth === null) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: Could not find normal depth for the given flow.</div>
+                    `;
+                    return;
+                }
+                
+                const partialResult = calculateBoxCulvertFlow(width, height, slope, roughness, normalDepth);
+                
+                let flowRegime = '';
+                if (partialResult.froudeNumber < 1) {
+                    flowRegime = 'Subcritical';
+                } else if (partialResult.froudeNumber > 1) {
+                    flowRegime = 'Supercritical';
+                } else {
+                    flowRegime = 'Critical';
+                }
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Normal depth:</strong> ${normalDepth.toFixed(2)} ft</p>
+                    <p><strong>Percent full:</strong> ${(normalDepth/height*100).toFixed(1)}%</p>
+                    <p><strong>Flow velocity:</strong> ${partialResult.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Froude number:</strong> ${partialResult.froudeNumber.toFixed(2)}</p>
+                    <p><strong>Flow regime:</strong> ${flowRegime}</p>
+                `;
+            }
+            
+            // Generate rating curve
+            plotRatingCurveBox(width, height, slope, roughness);
+        }
+        
+        function calculateChannelFlow() {
+            // Get input values
+            const bottomWidth = parseFloat(document.getElementById('channel-bottom-width').value);
+            const sideSlope = parseFloat(document.getElementById('channel-side-slope').value);
+            const slope = parseFloat(document.getElementById('channel-slope').value);
+            
+            // Get roughness value
+            let roughness;
+            if (document.getElementById('channel-custom-n').checked) {
+                roughness = parseFloat(document.getElementById('channel-roughness').value);
+            } else {
+                roughness = ROUGHNESS_COEFFICIENTS[document.getElementById('channel-material').value];
+            }
+            
+            // Get calculation type
+            let calcType;
+            document.querySelectorAll('input[name="channel-calc-type"]').forEach(radio => {
+                if (radio.checked) {
+                    calcType = radio.value;
+                }
+            });
+            
+            // Calculate and display results
+            const resultsDiv = document.getElementById('channel-results');
+            const resultsBody = document.getElementById('channel-results-body');
+            const plotDiv = document.getElementById('channel-plot');
+            
+            // Clear previous results
+            resultsBody.innerHTML = '';
+            resultsDiv.style.display = 'block';
+            plotDiv.style.display = 'block';
+            
+            if (calcType === 'calc-flow') {
+                const normalDepth = parseFloat(document.getElementById('channel-depth').value);
+                
+                const result = calculateTrapezoidalChannelFlow(bottomWidth, sideSlope, slope, roughness, normalDepth);
+                
+                let flowRegime = '';
+                if (result.froudeNumber < 1) {
+                    flowRegime = 'Subcritical';
+                } else if (result.froudeNumber > 1) {
+                    flowRegime = 'Supercritical';
+                } else {
+                    flowRegime = 'Critical';
+                }
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Flow rate:</strong> ${result.flowCfs.toFixed(2)} cfs</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Flow area:</strong> ${result.areaSqft.toFixed(2)} ft²</p>
+                    <p><strong>Top width:</strong> ${result.topWidth.toFixed(2)} ft</p>
+                    <p><strong>Froude number:</strong> ${result.froudeNumber.toFixed(2)}</p>
+                    <p><strong>Flow regime:</strong> ${flowRegime}</p>
+                    <p><strong>Critical depth:</strong> ${result.criticalDepth.toFixed(2)} ft</p>
+                `;
+            } else if (calcType === 'find-depth') {
+                const targetFlow = parseFloat(document.getElementById('channel-target-flow').value);
+                
+                const normalDepth = findNormalDepthTrapezoidal(bottomWidth, sideSlope, slope, roughness, targetFlow);
+                
+                if (normalDepth === null) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: Could not find normal depth for the given flow.</div>
+                    `;
+                    return;
+                }
+                
+                const result = calculateTrapezoidalChannelFlow(bottomWidth, sideSlope, slope, roughness, normalDepth);
+                
+                let flowRegime = '';
+                if (result.froudeNumber < 1) {
+                    flowRegime = 'Subcritical';
+                } else if (result.froudeNumber > 1) {
+                    flowRegime = 'Supercritical';
+                } else {
+                    flowRegime = 'Critical';
+                }
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Normal depth:</strong> ${normalDepth.toFixed(2)} ft</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Flow area:</strong> ${result.areaSqft.toFixed(2)} ft²</p>
+                    <p><strong>Top width:</strong> ${result.topWidth.toFixed(2)} ft</p>
+                    <p><strong>Froude number:</strong> ${result.froudeNumber.toFixed(2)}</p>
+                    <p><strong>Flow regime:</strong> ${flowRegime}</p>
+                `;
+            }
+            
+            // Generate rating curve
+            plotRatingCurveTrapezoidal(bottomWidth, sideSlope, slope, roughness);
+        }
+        
+        function findMinimumSize() {
+            // Get input values
+            const slope = parseFloat(document.getElementById('size-slope').value);
+            const targetFlow = parseFloat(document.getElementById('size-target-flow').value);
+            
+            // Get roughness value
+            let roughness;
+            if (document.getElementById('size-custom-n').checked) {
+                roughness = parseFloat(document.getElementById('size-roughness').value);
+            } else {
+                roughness = ROUGHNESS_COEFFICIENTS[document.getElementById('size-material').value];
+            }
+            
+            // Get culvert type
+            let culvertType;
+            document.querySelectorAll('input[name="size-culvert-type"]').forEach(radio => {
+                if (radio.checked) {
+                    culvertType = radio.value;
+                }
+            });
+            
+            // Calculate and display results
+            const resultsDiv = document.getElementById('size-results');
+            const resultsBody = document.getElementById('size-results-body');
+            const plotDiv = document.getElementById('size-plot');
+            
+            // Clear previous results
+            resultsBody.innerHTML = '';
+            resultsDiv.style.display = 'block';
+            plotDiv.style.display = 'block';
+            
+            if (culvertType === 'pipe') {
+                const minSize = parseFloat(document.getElementById('min-pipe-size').value);
+                const maxSize = parseFloat(document.getElementById('max-pipe-size').value);
+                const increment = parseFloat(document.getElementById('pipe-increment').value);
+                
+                const minPipeSize = findMinimumPipeSize(slope, roughness, targetFlow, minSize, maxSize, increment);
+                
+                if (minPipeSize === null) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: No pipe size in the specified range can handle the design flow of ${targetFlow} cfs</div>
+                    `;
+                    return;
+                }
+                
+                const result = calculateCircularPipeFlow(minPipeSize, slope, roughness);
+                
+                // Calculate normal depth for the design flow
+                const normalDepth = findNormalDepthCircular(minPipeSize, slope, roughness, targetFlow);
+                
+                resultsBody.innerHTML = `
+                    <div class="alert alert-success">Minimum required pipe diameter: ${minPipeSize} ft</div>
+                    <p><strong>Flow capacity:</strong> ${result.flowCfs.toFixed(2)} cfs</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Normal depth for design flow:</strong> ${normalDepth.toFixed(2)} ft</p>
+                    <p><strong>Percent full at design flow:</strong> ${(normalDepth/minPipeSize*100).toFixed(1)}%</p>
+                `;
+                
+                // Generate rating curve
+                plotRatingCurveCircular(minPipeSize, slope, roughness);
+            } else {
+                const minWidth = parseFloat(document.getElementById('min-width').value);
+                const maxWidth = parseFloat(document.getElementById('max-width').value);
+                const minHeight = parseFloat(document.getElementById('min-height').value);
+                const maxHeight = parseFloat(document.getElementById('max-height').value);
+                const increment = parseFloat(document.getElementById('box-size-increment').value);
+                
+                const minBoxSize = findMinimumBoxSize(slope, roughness, targetFlow, minWidth, maxWidth, minHeight, maxHeight, increment);
+                
+                if (minBoxSize === null) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: No box size in the specified range can handle the design flow of ${targetFlow} cfs</div>
+                    `;
+                    return;
+                }
+                
+                const width = minBoxSize.width;
+                const height = minBoxSize.height;
+                
+                // Calculate normal depth for the design flow
+                const normalDepth = findNormalDepthBox(width, height, slope, roughness, targetFlow);
+                
+                resultsBody.innerHTML = `
+                    <div class="alert alert-success">Minimum required box culvert size: ${width} ft × ${height} ft</div>
+                    <p><strong>Flow capacity:</strong> ${minBoxSize.capacity.toFixed(2)} cfs</p>
+                    <p><strong>Normal depth for design flow:</strong> ${normalDepth.toFixed(2)} ft</p>
+                    <p><strong>Percent full at design flow:</strong> ${(normalDepth/height*100).toFixed(1)}%</p>
+                `;
+                
+                // Generate rating curve
+                plotRatingCurveBox(width, height, slope, roughness);
+            }
+        }
+        
+        // Plotting functions
+        function plotRatingCurveCircular(diameter, slope, roughness, maxDepth = null) {
+            if (maxDepth === null) {
+                maxDepth = diameter;
+            }
+            
+            const depths = [];
+            const flows = [];
+            const velocities = [];
+            
+            const numPoints = 50;
+            const depthStep = maxDepth / numPoints;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const depth = (i + 1) * depthStep;
+                depths.push(depth);
+                
+                const result = calculateCircularPipeFlow(diameter, slope, roughness, depth);
+                flows.push(result.flowCfs);
+                velocities.push(result.velocityFps);
+            }
+            
+            const layout = {
+                title: `Rating                const hydraulicRadius = area / wettedPerimeter;
+                
+                // Calculate velocity using Manning's equation
+                const velocity = (1.49 / roughness) * Math.pow(hydraulicRadius, 2/3) * Math.pow(slope, 1/2);
+                const flow = velocity * area;
+                
+                return {
+                    flowCfs: flow,
+                    velocityFps: velocity,
+                    areaSqft: area,
+                    fullCapacity: true,
+                    percentFull: 100.0,
+                    criticalDepth: null,
+                    froudeNumber: null
+                };
+            } else {
+                // Partially full culvert
+                const area = width * normalDepth;
+                const wettedPerimeter = width + 2 * normalDepth;
+                const hydraulicRadius = area / wettedPerimeter;
+                
+                // Calculate velocity using Manning's equation
+                const velocity = (1.49 / roughness) * Math.pow(hydraulicRadius, 2/3) * Math.pow(slope, 1/2);
+                const flow = velocity * area;
+                
+                // Calculate percent full
+                const fullArea = width * height;
+                const percentFull = (area / fullArea) * 100;
+                
+                // Calculate critical depth and Froude number
+                const g = GRAVITY;  // acceleration due to gravity in ft/s²
+                const topWidth = width;  // For rectangular channel, top width is constant
+                const froude = velocity / Math.sqrt(g * normalDepth);
+                const criticalDepth = Math.pow(flow * flow / (g * width * width), 1/3);
+                
+                return {
+                    flowCfs: flow,
+                    velocityFps: velocity,
+                    areaSqft: area,
+                    fullCapacity: false,
+                    percentFull: percentFull,
+                    normalDepth: normalDepth,
+                    criticalDepth: criticalDepth,
+                    froudeNumber: froude,
+                    topWidth: topWidth
+                };
+            }
+        }
+        
+        function calculateTrapezoidalChannelFlow(bottomWidth, sideSlope, slope, roughness, normalDepth) {
+            if (normalDepth <= 0) {
+                return {
+                    flowCfs: 0,
+                    velocityFps: 0,
+                    areaSqft: 0
+                };
+            }
+            
+            // Calculate geometric properties
+            const area = (bottomWidth + sideSlope * normalDepth) * normalDepth;
+            const wettedPerimeter = bottomWidth + 2 * normalDepth * Math.sqrt(1 + sideSlope * sideSlope);
+            const hydraulicRadius = area / wettedPerimeter;
+            
+            // Calculate velocity using Manning's equation
+            const velocity = (1.49 / roughness) * Math.pow(hydraulicRadius, 2/3) * Math.pow(slope, 1/2);
+            const flow = velocity * area;
+            
+            // Calculate critical depth and Froude number
+            const g = GRAVITY;  // acceleration due to gravity in ft/s²
+            const topWidth = bottomWidth + 2 * sideSlope * normalDepth;
+            const froude = velocity / Math.sqrt(g * normalDepth);
+            
+            // Simple approximation for critical depth in trapezoidal channel
+            const criticalDepth = Math.pow(flow * flow / (g * topWidth * topWidth), 1/3);
+            
+            return {
+                flowCfs: flow,
+                velocityFps: velocity,
+                areaSqft: area,
+                normalDepth: normalDepth,
+                criticalDepth: criticalDepth,
+                froudeNumber: froude,
+                topWidth: topWidth
+            };
+        }
+        
+        function findNormalDepthCircular(diameter, slope, roughness, targetFlow) {
+            // First check if the flow exceeds full pipe capacity
+            const fullPipe = calculateCircularPipeFlow(diameter, slope, roughness);
+            if (targetFlow > fullPipe.flowCfs) {
+                return null;  // Flow exceeds capacity
+            }
+            
+            // Use a simple numerical approach to find normal depth
+            const maxDepth = diameter;
+            let step = maxDepth / 100;
+            let currentDepth = step;
+            
+            while (currentDepth <= maxDepth) {
+                const result = calculateCircularPipeFlow(diameter, slope, roughness, currentDepth);
+                if (Math.abs(result.flowCfs - targetFlow) < 0.01 * targetFlow) {
+                    return currentDepth;
+                }
+                
+                if (result.flowCfs > targetFlow) {
+                    // We've gone too far, step back and reduce step size
+                    currentDepth -= step;
+                    step /= 10;
+                    if (step < 0.00001) {
+                        return currentDepth;  // Close enough, numerical precision limit
+                    }
+                }
+                
+                currentDepth += step;
+            }
+            
+            // If we get here, use full depth
+            return diameter;
+        }
+        
+        function findNormalDepthBox(width, height, slope, roughness, targetFlow) {
+            // First check if the flow exceeds full culvert capacity
+            const fullCulvert = calculateBoxCulvertFlow(width, height, slope, roughness);
+            if (targetFlow > fullCulvert.flowCfs) {
+                return null;  // Flow exceeds capacity
+            }
+            
+            // Use a simple numerical approach to find normal depth
+            const maxDepth = height;
+            let step = maxDepth / 100;
+            let currentDepth = step;
+            
+            while (currentDepth <= maxDepth) {
+                const result = calculateBoxCulvertFlow(width, height, slope, roughness, currentDepth);
+                if (Math.abs(result.flowCfs - targetFlow) < 0.01 * targetFlow) {
+                    return currentDepth;
+                }
+                
+                if (result.flowCfs > targetFlow) {
+                    // We've gone too far, step back and reduce step size
+                    currentDepth -= step;
+                    step /= 10;
+                    if (step < 0.00001) {
+                        return currentDepth;  // Close enough, numerical precision limit
+                    }
+                }
+                
+                currentDepth += step;
+            }
+            
+            // If we get here, use full depth
+            return height;
+        }
+        
+        function findNormalDepthTrapezoidal(bottomWidth, sideSlope, slope, roughness, targetFlow, maxDepth = 20) {
+            // Use a simple numerical approach to find normal depth
+            let step = maxDepth / 100;
+            let currentDepth = step;
+            
+            while (currentDepth <= maxDepth) {
+                const result = calculateTrapezoidalChannelFlow(bottomWidth, sideSlope, slope, roughness, currentDepth);
+                if (Math.abs(result.flowCfs - targetFlow) < 0.01 * targetFlow) {
+                    return currentDepth;
+                }
+                
+                if (result.flowCfs > targetFlow) {
+                    // We've gone too far, step back and reduce step size
+                    currentDepth -= step;
+                    step /= 10;
+                    if (step < 0.00001) {
+                        return currentDepth;  // Close enough, numerical precision limit
+                    }
+                }
+                
+                currentDepth += step;
+            }
+            
+            // If we get here, the flow might be too large for this channel, return max depth
+            return maxDepth;
+        }
+        
+        function findMinimumPipeSize(slope, roughness, targetFlow, minSize = 0.5, maxSize = 10, increment = 0.5) {
+            const sizes = [];
+            for (let size = minSize; size <= maxSize; size += increment) {
+                sizes.push(size);
+            }
+            
+            for (const size of sizes) {
+                const flowCapacity = calculateCircularPipeFlow(size, slope, roughness).flowCfs;
+                if (flowCapacity >= targetFlow) {
+                    return size;
+                }
+            }
+            
+            return null;  // No size in the range can handle the flow
+        }
+        
+        function findMinimumBoxSize(slope, roughness, targetFlow, minWidth = 1, maxWidth = 20, minHeight = 1, maxHeight = 20, increment = 1) {
+            const suitableSizes = [];
+            
+            for (let width = minWidth; width <= maxWidth; width += increment) {
+                for (let height = minHeight; height <= maxHeight; height += increment) {
+                    if (width / height > 3 || height > width) {
+                        continue;  // Skip unreasonable proportions
+                    }
+                    
+                    const flowCapacity = calculateBoxCulvertFlow(width, height, slope, roughness).flowCfs;
+                    
+                    if (flowCapacity >= targetFlow) {
+                        suitableSizes.push({
+                            width: width,
+                            height: height,
+                            area: width * height,
+                            capacity: flowCapacity
+                        });
+                    }
+                }
+            }
+            
+            if (suitableSizes.length === 0) {
+                return null;  // No size in the range can handle the flow
+            }
+            
+            // Find the smallest culvert by area
+            suitableSizes.sort((a, b) => a.area - b.area);
+            return suitableSizes[0];
+        }
+        
+        // UI Interaction functions
+        function calculatePipeFlow() {
+            // Get input values
+            const diameter = parseFloat(document.getElementById('pipe-diameter').value);
+            const slope = parseFloat(document.getElementById('pipe-slope').value);
+            
+            // Get roughness value
+            let roughness;
+            if (document.getElementById('pipe-custom-n').checked) {
+                roughness = parseFloat(document.getElementById('pipe-roughness').value);
+            } else {
+                roughness = ROUGHNESS_COEFFICIENTS[document.getElementById('pipe-material').value];
+            }
+            
+            // Get calculation type
+            let calcType;
+            document.querySelectorAll('input[name="pipe-calc-type"]').forEach(radio => {
+                if (radio.checked) {
+                    calcType = radio.value;
+                }
+            });
+            
+            // Calculate and display results
+            const resultsDiv = document.getElementById('pipe-results');
+            const resultsBody = document.getElementById('pipe-results-body');
+            const plotDiv = document.getElementById('pipe-plot');
+            
+            // Clear previous results
+            resultsBody.innerHTML = '';
+            resultsDiv.style.display = 'block';
+            plotDiv.style.display = 'block';
+            
+            let result;
+            if (calcType === 'full-flow') {
+                result = calculateCircularPipeFlow(diameter, slope, roughness);
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Flow rate:</strong> ${result.flowCfs.toFixed(2)} cfs</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Flow area:</strong> ${result.areaSqft.toFixed(2)} ft²</p>
+                `;
+            } else if (calcType === 'partial-flow') {
+                const normalDepth = parseFloat(document.getElementById('pipe-depth').value);
+                
+                // Validate depth
+                if (normalDepth > diameter) {
+                    resultsBody.innerHTML = `<div class="alert alert-danger">Error: Flow depth cannot exceed pipe diameter.</div>`;
+                    return;
+                }
+                
+                result = calculateCircularPipeFlow(diameter, slope, roughness, normalDepth);
+                
+                let flowRegime = '';
+                if (result.froudeNumber < 1) {
+                    flowRegime = 'Subcritical';
+                } else if (result.froudeNumber > 1) {
+                    flowRegime = 'Supercritical';
+                } else {
+                    flowRegime = 'Critical';
+                }
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Flow rate:</strong> ${result.flowCfs.toFixed(2)} cfs</p>
+                    <p><strong>Flow velocity:</strong> ${result.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Flow area:</strong> ${result.areaSqft.toFixed(2)} ft²</p>
+                    <p><strong>Percent full:</strong> ${result.percentFull.toFixed(1)}%</p>
+                    <p><strong>Froude number:</strong> ${result.froudeNumber.toFixed(2)}</p>
+                    <p><strong>Flow regime:</strong> ${flowRegime}</p>
+                `;
+            } else if (calcType === 'find-depth') {
+                const targetFlow = parseFloat(document.getElementById('pipe-target-flow').value);
+                
+                // Check capacity
+                const fullPipe = calculateCircularPipeFlow(diameter, slope, roughness);
+                
+                if (targetFlow > fullPipe.flowCfs) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: Target flow exceeds full pipe capacity (${fullPipe.flowCfs.toFixed(2)} cfs)</div>
+                    `;
+                    return;
+                }
+                
+                const normalDepth = findNormalDepthCircular(diameter, slope, roughness, targetFlow);
+                
+                if (normalDepth === null) {
+                    resultsBody.innerHTML = `
+                        <div class="alert alert-danger">Error: Could not find normal depth for the given flow.</div>
+                    `;
+                    return;
+                }
+                
+                const partialResult = calculateCircularPipeFlow(diameter, slope, roughness, normalDepth);
+                
+                let flowRegime = '';
+                if (partialResult.froudeNumber < 1) {
+                    flowRegime = 'Subcritical';
+                } else if (partialResult.froudeNumber > 1) {
+                    flowRegime = 'Supercritical';
+                } else {
+                    flowRegime = 'Critical';
+                }
+                
+                resultsBody.innerHTML = `
+                    <p><strong>Normal depth:</strong> ${normalDepth.toFixed(2)} ft</p>
+                    <p><strong>Percent full:</strong> ${(normalDepth/diameter*100).toFixed(1)}%</p>
+                    <p><strong>Flow velocity:</strong> ${partialResult.velocityFps.toFixed(2)} ft/s</p>
+                    <p><strong>Froude number:</strong> ${partialResult.froudeNumber.toFixed(2)}</p>
+                    <p><strong>Flow regime:</strong> ${flowRegime}</p>
+                `;
+            }
+            
+            // Generate rating curve
+            plotRatingCurveCircular(diameter, slope, roughness);
+        }
+        
+        function calculateBoxFlow() {
+            // Get input values                                            <div class="form-group">
+                                                <label for="max-height">Maximum culvert height (ft):</label>
+                                                <input type="number" id="max-height" class="form-control" min="3.0" max="20.0" step="1.0" value="10.0">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="box-size-increment">Size increment (ft):</label>
+                                                <select id="box-size-increment" class="form-select">
+                                                    <option value="0.5">0.5</option>
+                                                    <option value="1.0" selected>1.0</option>
+                                                    <option value="2.0">2.0</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <button id="find-size" class="btn btn-primary btn-calculate">Find Minimum Size</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card results-card" id="size-results" style="display: none;">
+                                    <div class="card-header">Results</div>
+                                    <div class="card-body" id="size-results-body">
+                                        <!-- Results will be displayed here -->
+                                    </div>
+                                </div>
+                                <div class="plot-container" id="size-plot" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-5">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">About Manning's Equation</div>
+                        <div class="card-body">
+                            <p>Manning's equation is used to calculate the velocity of open-channel flow:</p>
+                            <p>$V = \frac{1.49}{n} R_h^{2/3} S^{1/2}$</p>
+                            <p>Where:</p>
+                            <ul>
+                                <li>\(V\) is the cross-sectional average velocity (ft/s)</li>
+                                <li>\(n\) is Manning's roughness coefficient</li>
+                                <li>\(R_h\) is the hydraulic radius (ft)</li>
+                                <li>\(S\) is the slope of the hydraulic grade line (ft/ft)</li>
+                            </ul>
+                            <p>Flow rate is calculated by multiplying velocity by cross-sectional area:</p>
+                            <p>$Q = VA$</p>
+                            <p>This calculator handles circular pipes, rectangular box culverts, and trapezoidal channels.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Manning's roughness coefficients
+        const ROUGHNESS_COEFFICIENTS = {
+            'concrete_smooth': 0.012,
+            'concrete_rough': 0.017,
+            'corrugated_metal': 0.024,
+            'hdpe_smooth': 0.010,
+            'pvc': 0.009,
+            'earth_clean': 0.022,
+            'earth_with_gravel': 0.025,
+            'natural_streams': 0.035,
+            'rock_cut': 0.035,
+            'brush': 0.050,
+            'riprap': 0.035
+        };
+
+        // Constants
+        const GRAVITY = 32.2; // ft/s²
+        const PI = Math.PI;
+
+        // UI Interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Circular Pipe Tab
+            const pipeCustomN = document.getElementById('pipe-custom-n');
+            const pipeCustomNGroup = document.getElementById('pipe-custom-n-group');
+            const pipeNValueDisplay = document.getElementById('pipe-n-value-display');
+            const pipeNValue = document.getElementById('pipe-n-value');
+            const pipeMaterial = document.getElementById('pipe-material');
+            const pipeCalcTypeRadios = document.querySelectorAll('input[name="pipe-calc-type"]');
+            const pipeDepthGroup = document.getElementById('pipe-depth-group');
+            const pipeTargetFlowGroup = document.getElementById('pipe-target-flow-group');
+            const calculatePipeBtn = document.getElementById('calculate-pipe');
+            
+            // Box Culvert Tab
+            const boxCustomN = document.getElementById('box-custom-n');
+            const boxCustomNGroup = document.getElementById('box-custom-n-group');
+            const boxNValueDisplay = document.getElementById('box-n-value-display');
+            const boxNValue = document.getElementById('box-n-value');
+            const boxMaterial = document.getElementById('box-material');
+            const boxCalcTypeRadios = document.querySelectorAll('input[name="box-calc-type"]');
+            const boxDepthGroup = document.getElementById('box-depth-group');
+            const boxTargetFlowGroup = document.getElementById('box-target-flow-group');
+            const calculateBoxBtn = document.getElementById('calculate-box');
+            
+            // Trapezoidal Channel Tab
+            const channelCustomN = document.getElementById('channel-custom-n');
+            const channelCustomNGroup = document.getElementById('channel-custom-n-group');
+            const channelNValueDisplay = document.getElementById('channel-n-value-display');
+            const channelNValue = document.getElementById('channel-n-value');
+            const channelMaterial = document.getElementById('channel-material');
+            const channelCalcTypeRadios = document.querySelectorAll('input[name="channel-calc-type"]');
+            const channelDepthGroup = document.getElementById('channel-depth-group');
+            const channelTargetFlowGroup = document.getElementById('channel-target-flow-group');
+            const calculateChannelBtn = document.getElementById('calculate-channel');
+            
+            // Size Determination Tab
+            const sizeCustomN = document.getElementById('size-custom-n');
+            const sizeCustomNGroup = document.getElementById('size-custom-n-group');
+            const sizeNValueDisplay = document.getElementById('size-n-value-display');
+            const sizeNValue = document.getElementById('size-n-value');
+            const sizeMaterial = document.getElementById('size-material');
+            const sizeCulvertTypeRadios = document.querySelectorAll('input[name="size-culvert-type"]');
+            const pipeSizeOptions = document.getElementById('pipe-size-options');
+            const boxSizeOptions = document.getElementById('box-size-options');
+            const findSizeBtn = document.getElementById('find-size');
+            
+            // Set up roughness coefficient display
+            function updateRoughnessDisplay(material, valueDisplay, customCheck, customGroup) {
+                if (customCheck.checked) {
+                    customGroup.style.display = 'block';
+                    valueDisplay.style.display = 'none';
+                } else {
+                    customGroup.style.display = 'none';
+                    valueDisplay.style.display = 'block';
+                    const n = ROUGHNESS_COEFFICIENTS[material.value];
+                    valueDisplay.querySelector('span').textContent = n;
+                }
+            }
+            
+            // Initialize roughness values
+            updateRoughnessDisplay(pipeMaterial, pipeNValueDisplay, pipeCustomN, pipeCustomNGroup);
+            updateRoughnessDisplay(boxMaterial, boxNValueDisplay, boxCustomN, boxCustomNGroup);
+            updateRoughnessDisplay(channelMaterial, channelNValueDisplay, channelCustomN, channelCustomNGroup);
+            updateRoughnessDisplay(sizeMaterial, sizeNValueDisplay, sizeCustomN, sizeCustomNGroup);
+            
+            // Set up event listeners for roughness coefficient
+            pipeCustomN.addEventListener('change', () => {
+                updateRoughnessDisplay(pipeMaterial, pipeNValueDisplay, pipeCustomN, pipeCustomNGroup);
+            });
+            
+            pipeMaterial.addEventListener('change', () => {
+                updateRoughnessDisplay(pipeMaterial, pipeNValueDisplay, pipeCustomN, pipeCustomNGroup);
+            });
+            
+            boxCustomN.addEventListener('change', () => {
+                updateRoughnessDisplay(boxMaterial, boxNValueDisplay, boxCustomN, boxCustomNGroup);
+            });
+            
+            boxMaterial.addEventListener('change', () => {
+                updateRoughnessDisplay(boxMaterial, boxNValueDisplay, boxCustomN, boxCustomNGroup);
+            });
+            
+            channelCustomN.addEventListener('change', () => {
+                updateRoughnessDisplay(channelMaterial, channelNValueDisplay, channelCustomN, channelCustomNGroup);
+            });
+            
+            channelMaterial.addEventListener('change', () => {
+                updateRoughnessDisplay(channelMaterial, channelNValueDisplay, channelCustomN, channelCustomNGroup);
+            });
+            
+            sizeCustomN.addEventListener('change', () => {
+                updateRoughnessDisplay(sizeMaterial, sizeNValueDisplay, sizeCustomN, sizeCustomNGroup);
+            });
+            
+            sizeMaterial.addEventListener('change', () => {
+                updateRoughnessDisplay(sizeMaterial, sizeNValueDisplay, sizeCustomN, sizeCustomNGroup);
+            });
+            
+            // Set up event listeners for calculation type
+            pipeCalcTypeRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'partial-flow') {
+                        pipeDepthGroup.style.display = 'block';
+                        pipeTargetFlowGroup.style.display = 'none';
+                    } else if (radio.value === 'find-depth') {
+                        pipeDepthGroup.style.display = 'none';
+                        pipeTargetFlowGroup.style.display = 'block';
+                    } else {
+                        pipeDepthGroup.style.display = 'none';
+                        pipeTargetFlowGroup.style.display = 'none';
+                    }
+                });
+            });
+            
+            boxCalcTypeRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'partial-flow') {
+                        boxDepthGroup.style.display = 'block';
+                        boxTargetFlowGroup.style.display = 'none';
+                    } else if (radio.value === 'find-depth') {
+                        boxDepthGroup.style.display = 'none';
+                        boxTargetFlowGroup.style.display = 'block';
+                    } else {
+                        boxDepthGroup.style.display = 'none';
+                        boxTargetFlowGroup.style.display = 'none';
+                    }
+                });
+            });
+            
+            channelCalcTypeRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'calc-flow') {
+                        channelDepthGroup.style.display = 'block';
+                        channelTargetFlowGroup.style.display = 'none';
+                    } else if (radio.value === 'find-depth') {
+                        channelDepthGroup.style.display = 'none';
+                        channelTargetFlowGroup.style.display = 'block';
+                    }
+                });
+            });
+            
+            sizeCulvertTypeRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'pipe') {
+                        pipeSizeOptions.style.display = 'block';
+                        boxSizeOptions.style.display = 'none';
+                    } else {
+                        pipeSizeOptions.style.display = 'none';
+                        boxSizeOptions.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Calculate buttons event listeners
+            calculatePipeBtn.addEventListener('click', calculatePipeFlow);
+            calculateBoxBtn.addEventListener('click', calculateBoxFlow);
+            calculateChannelBtn.addEventListener('click', calculateChannelFlow);
+            findSizeBtn.addEventListener('click', findMinimumSize);
+        });
+
+        // Calculation functions
+        function calculateCircularPipeFlow(diameter, slope, roughness, normalDepth = null) {
+            const radius = diameter / 2;
+            
+            if (normalDepth === null || normalDepth >= diameter) {
+                // Full pipe flow
+                const area = PI * radius * radius;
+                const wettedPerimeter = 2 * PI * radius;
+                const hydraulicRadius = area / wettedPerimeter;
+                
+                // Calculate velocity using Manning's equation
+                const velocity = (1.49 / roughness) * Math.pow(hydraulicRadius, 2/3) * Math.pow(slope, 1/2);
+                const flow = velocity * area;
+                
+                return {
+                    flowCfs: flow,
+                    velocityFps: velocity,
+                    areaSqft: area,
+                    fullCapacity: true,
+                    percentFull: 100.0,
+                    criticalDepth: null,
+                    froudeNumber: null
+                };
+            } else {
+                // Partially full pipe
+                // Calculate geometric properties for partial pipe
+                const theta = 2 * Math.acos((radius - normalDepth) / radius);
+                const area = (radius * radius) * (theta - Math.sin(theta)) / 2;
+                const wettedPerimeter = radius * theta;
+                
+                if (wettedPerimeter === 0) {
+                    return {
+                        flowCfs: 0,
+                        velocityFps: 0,
+                        areaSqft: 0,
+                        fullCapacity: false,
+                        percentFull: 0,
+                        criticalDepth: 0,
+                        froudeNumber: 0
+                    };
+                }
+                
+                const hydraulicRadius = area / wettedPerimeter;
+                
+                // Calculate velocity using Manning's equation
+                const velocity = (1.49 / roughness) * Math.pow(hydraulicRadius, 2/3) * Math.pow(slope, 1/2);
+                const flow = velocity * area;
+                
+                // Calculate percent full
+                const fullArea = PI * radius * radius;
+                const percentFull = (area / fullArea) * 100;
+                
+                // Calculate critical depth and Froude number
+                const g = GRAVITY;  // acceleration due to gravity in ft/s²
+                const topWidth = 2 * Math.sqrt(normalDepth * (diameter - normalDepth));
+                const froude = velocity / Math.sqrt(g * (area / topWidth));
+                
+                // Approximation for critical depth in circular pipe
+                const criticalDepth = Math.pow(flow * flow / (g * topWidth), 1/3);
+                
+                return {
+                    flowCfs: flow,
+                    velocityFps: velocity,
+                    areaSqft: area,
+                    fullCapacity: false,
+                    percentFull: percentFull,
+                    normalDepth: normalDepth,
+                    criticalDepth: criticalDepth,
+                    froudeNumber: froude,
+                    topWidth: topWidth
+                };
+            }
+        }
+        
+        function calculateBoxCulvertFlow(width, height, slope, roughness, normalDepth = null) {
+            if (normalDepth === null || normalDepth >= height) {
+                // Full culvert flow
+                const area = width * height;
+                const wettedPerimeter = 2 * (width + height);
+                const hydraulicRadius = area / wettedPerimeter;                                            <div class="form-group">
+                                            <label>Calculation type:</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="box-calc-type" id="box-full-flow" value="full-flow" checked>
+                                                <label class="form-check-label" for="box-full-flow">
+                                                    Full culvert flow
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="box-calc-type" id="box-partial-flow" value="partial-flow">
+                                                <label class="form-check-label" for="box-partial-flow">
+                                                    Partial culvert flow
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="box-calc-type" id="box-find-depth" value="find-depth">
+                                                <label class="form-check-label" for="box-find-depth">
+                                                    Find normal depth for given flow
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="box-depth-group" class="form-group" style="display: none;">
+                                            <label for="box-depth">Flow depth (ft):</label>
+                                            <input type="number" id="box-depth" class="form-control" min="0.01" step="0.1" value="2.0">
+                                        </div>
+                                        
+                                        <div id="box-target-flow-group" class="form-group" style="display: none;">
+                                            <label for="box-target-flow">Target flow (cfs):</label>
+                                            <input type="number" id="box-target-flow" class="form-control" min="0.1" step="5.0" value="50.0">
+                                        </div>
+                                        
+                                        <button id="calculate-box" class="btn btn-primary btn-calculate">Calculate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card results-card" id="box-results" style="display: none;">
+                                    <div class="card-header">Results</div>
+                                    <div class="card-body" id="box-results-body">
+                                        <!-- Results will be displayed here -->
+                                    </div>
+                                </div>
+                                <div class="plot-container" id="box-plot" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trapezoidal Channel Tab -->
+                    <div class="tab-pane fade" id="trapezoidal" role="tabpanel" aria-labelledby="trapezoidal-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Input Parameters</div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="channel-material">Select channel material:</label>
+                                            <select id="channel-material" class="form-select material-select">
+                                                <option value="concrete_smooth">Concrete (Smooth)</option>
+                                                <option value="concrete_rough">Concrete (Rough)</option>
+                                                <option value="corrugated_metal">Corrugated Metal</option>
+                                                <option value="hdpe_smooth">HDPE (Smooth)</option>
+                                                <option value="pvc">PVC</option>
+                                                <option value="earth_clean">Earth (Clean)</option>
+                                                <option value="earth_with_gravel">Earth with Gravel</option>
+                                                <option value="natural_streams" selected>Natural Streams</option>
+                                                <option value="rock_cut">Rock Cut</option>
+                                                <option value="brush">Brush</option>
+                                                <option value="riprap">Riprap</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="channel-custom-n">
+                                            <label class="form-check-label" for="channel-custom-n">
+                                                Use custom roughness coefficient
+                                            </label>
+                                        </div>
+                                        <div id="channel-custom-n-group" class="custom-n-group">
+                                            <div class="form-group">
+                                                <label for="channel-roughness">Manning's n value:</label>
+                                                <input type="number" id="channel-roughness" class="form-control" min="0.001" max="0.1" step="0.001" value="0.03">
+                                            </div>
+                                        </div>
+                                        <div id="channel-n-value-display">Manning's n value: <span id="channel-n-value">0.035</span></div>
+                                        
+                                        <div class="form-group mt-3">
+                                            <label for="channel-bottom-width">Channel bottom width (ft):</label>
+                                            <input type="number" id="channel-bottom-width" class="form-control" min="0.1" max="50.0" step="1.0" value="10.0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="channel-side-slope">Side slope (horizontal:1 vertical):</label>
+                                            <input type="number" id="channel-side-slope" class="form-control" min="0.1" max="10.0" step="0.1" value="2.0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="channel-slope">Channel bed slope (ft/ft):</label>
+                                            <input type="number" id="channel-slope" class="form-control" min="0.0001" max="0.1" step="0.0001" value="0.005">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Calculation type:</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="channel-calc-type" id="channel-calc-flow" value="calc-flow" checked>
+                                                <label class="form-check-label" for="channel-calc-flow">
+                                                    Calculate flow for given depth
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="channel-calc-type" id="channel-find-depth" value="find-depth">
+                                                <label class="form-check-label" for="channel-find-depth">
+                                                    Find normal depth for given flow
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="channel-depth-group" class="form-group">
+                                            <label for="channel-depth">Flow depth (ft):</label>
+                                            <input type="number" id="channel-depth" class="form-control" min="0.1" max="20.0" step="0.1" value="3.0">
+                                        </div>
+                                        
+                                        <div id="channel-target-flow-group" class="form-group" style="display: none;">
+                                            <label for="channel-target-flow">Target flow (cfs):</label>
+                                            <input type="number" id="channel-target-flow" class="form-control" min="0.1" step="10.0" value="100.0">
+                                        </div>
+                                        
+                                        <button id="calculate-channel" class="btn btn-primary btn-calculate">Calculate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card results-card" id="channel-results" style="display: none;">
+                                    <div class="card-header">Results</div>
+                                    <div class="card-body" id="channel-results-body">
+                                        <!-- Results will be displayed here -->
+                                    </div>
+                                </div>
+                                <div class="plot-container" id="channel-plot" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Size Determination Tab -->
+                    <div class="tab-pane fade" id="size" role="tabpanel" aria-labelledby="size-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Input Parameters</div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>Culvert type:</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="size-culvert-type" id="size-pipe" value="pipe" checked>
+                                                <label class="form-check-label" for="size-pipe">
+                                                    Circular Pipe
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="size-culvert-type" id="size-box" value="box">
+                                                <label class="form-check-label" for="size-box">
+                                                    Box Culvert
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="size-material">Select culvert material:</label>
+                                            <select id="size-material" class="form-select material-select">
+                                                <option value="concrete_smooth">Concrete (Smooth)</option>
+                                                <option value="concrete_rough">Concrete (Rough)</option>
+                                                <option value="corrugated_metal">Corrugated Metal</option>
+                                                <option value="hdpe_smooth">HDPE (Smooth)</option>
+                                                <option value="pvc">PVC</option>
+                                                <option value="earth_clean">Earth (Clean)</option>
+                                                <option value="earth_with_gravel">Earth with Gravel</option>
+                                                <option value="natural_streams">Natural Streams</option>
+                                                <option value="rock_cut">Rock Cut</option>
+                                                <option value="brush">Brush</option>
+                                                <option value="riprap">Riprap</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="size-custom-n">
+                                            <label class="form-check-label" for="size-custom-n">
+                                                Use custom roughness coefficient
+                                            </label>
+                                        </div>
+                                        <div id="size-custom-n-group" class="custom-n-group">
+                                            <div class="form-group">
+                                                <label for="size-roughness">Manning's n value:</label>
+                                                <input type="number" id="size-roughness" class="form-control" min="0.001" max="0.1" step="0.001" value="0.013">
+                                            </div>
+                                        </div>
+                                        <div id="size-n-value-display">Manning's n value: <span id="size-n-value">0.012</span></div>
+                                        
+                                        <div class="form-group mt-3">
+                                            <label for="size-slope">Channel slope (ft/ft):</label>
+                                            <input type="number" id="size-slope" class="form-control" min="0.0001" max="0.1" step="0.0001" value="0.01">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="size-target-flow">Design flow (cfs):</label>
+                                            <input type="number" id="size-target-flow" class="form-control" min="0.1" step="5.0" value="50.0">
+                                        </div>
+                                        
+                                        <!-- Pipe Size Options -->
+                                        <div id="pipe-size-options">
+                                            <div class="form-group">
+                                                <label for="min-pipe-size">Minimum pipe diameter (ft):</label>
+                                                <input type="number" id="min-pipe-size" class="form-control" min="0.5" max="5.0" step="0.5" value="1.0">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="max-pipe-size">Maximum pipe diameter (ft):</label>
+                                                <input type="number" id="max-pipe-size" class="form-control" min="1.5" max="20.0" step="0.5" value="10.0">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="pipe-increment">Size increment (ft):</label>
+                                                <select id="pipe-increment" class="form-select">
+                                                    <option value="0.25">0.25</option>
+                                                    <option value="0.5" selected>0.5</option>
+                                                    <option value="1.0">1.0</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Box Size Options -->
+                                        <div id="box-size-options" style="display: none;">
+                                            <div class="form-group">
+                                                <label for="min-width">Minimum culvert width (ft):</label>
+                                                <input type="number" id="min-width" class="form-control" min="1.0" max="10.0" step="1.0" value="2.0">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="max-width">Maximum culvert width (ft):</label>
+                                                <input type="number" id="max-width" class="form-control" min="3.0" max="30.0" step="1.0" value="20.0">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="min-height">Minimum culvert height (ft):</label>
+                                                <input type="number" id="min-height" class="form-control" min="1.0" max="10.0" step="1.0" value="2.0">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="max-height">Maximum culvert height (ft):</label>
+                                                <input type="number" id="max-height" class="form-control" min="3.0" max="20.0"<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manning's Flow Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.20.0/plotly.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.5.0/math.min.js"></script>
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .tab-content {
+            padding: 20px;
+            border-left: 1px solid #dee2e6;
+            border-right: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 0 0 5px 5px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .plot-container {
+            height: 400px;
+            margin-top: 20px;
+        }
+        .material-select {
+            margin-bottom: 15px;
+        }
+        .results-card {
+            margin-top: 20px;
+        }
+        footer {
+            margin-top: 30px;
+            padding: 20px 0;
+            color: #6c757d;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .tab-pane {
+            padding-top: 10px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .alert {
+            margin-top: 15px;
+        }
+        .nav-tabs .nav-link {
+            font-weight: 500;
+        }
+        .btn-calculate {
+            margin-top: 10px;
+        }
+        .custom-n-group {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+        .card-header {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light rounded">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Manning's Flow Calculator</a>
+            </div>
+        </nav>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> This tool calculates flow characteristics using Manning's equation for culverts and open channels.
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="calculatorTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="circular-tab" data-bs-toggle="tab" data-bs-target="#circular" type="button" role="tab" aria-controls="circular" aria-selected="true">
+                            <i class="fas fa-circle"></i> Circular Pipe
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="box-tab" data-bs-toggle="tab" data-bs-target="#box" type="button" role="tab" aria-controls="box" aria-selected="false">
+                            <i class="fas fa-square"></i> Box Culvert
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="trapezoidal-tab" data-bs-toggle="tab" data-bs-target="#trapezoidal" type="button" role="tab" aria-controls="trapezoidal" aria-selected="false">
+                            <i class="fas fa-shapes"></i> Trapezoidal Channel
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="size-tab" data-bs-toggle="tab" data-bs-target="#size" type="button" role="tab" aria-controls="size" aria-selected="false">
+                            <i class="fas fa-ruler"></i> Size Determination
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="calculatorTabsContent">
+                    <!-- Circular Pipe Tab -->
+                    <div class="tab-pane fade show active" id="circular" role="tabpanel" aria-labelledby="circular-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Input Parameters</div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="pipe-material">Select pipe material:</label>
+                                            <select id="pipe-material" class="form-select material-select">
+                                                <option value="concrete_smooth">Concrete (Smooth)</option>
+                                                <option value="concrete_rough">Concrete (Rough)</option>
+                                                <option value="corrugated_metal">Corrugated Metal</option>
+                                                <option value="hdpe_smooth">HDPE (Smooth)</option>
+                                                <option value="pvc">PVC</option>
+                                                <option value="earth_clean">Earth (Clean)</option>
+                                                <option value="earth_with_gravel">Earth with Gravel</option>
+                                                <option value="natural_streams">Natural Streams</option>
+                                                <option value="rock_cut">Rock Cut</option>
+                                                <option value="brush">Brush</option>
+                                                <option value="riprap">Riprap</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="pipe-custom-n">
+                                            <label class="form-check-label" for="pipe-custom-n">
+                                                Use custom roughness coefficient
+                                            </label>
+                                        </div>
+                                        <div id="pipe-custom-n-group" class="custom-n-group">
+                                            <div class="form-group">
+                                                <label for="pipe-roughness">Manning's n value:</label>
+                                                <input type="number" id="pipe-roughness" class="form-control" min="0.001" max="0.1" step="0.001" value="0.013">
+                                            </div>
+                                        </div>
+                                        <div id="pipe-n-value-display">Manning's n value: <span id="pipe-n-value">0.012</span></div>
+                                        
+                                        <div class="form-group mt-3">
+                                            <label for="pipe-diameter">Pipe diameter (ft):</label>
+                                            <input type="number" id="pipe-diameter" class="form-control" min="0.1" max="20.0" step="0.1" value="3.0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="pipe-slope">Channel slope (ft/ft):</label>
+                                            <input type="number" id="pipe-slope" class="form-control" min="0.0001" max="0.1" step="0.0001" value="0.01">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Calculation type:</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="pipe-calc-type" id="pipe-full-flow" value="full-flow" checked>
+                                                <label class="form-check-label" for="pipe-full-flow">
+                                                    Full pipe flow
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="pipe-calc-type" id="pipe-partial-flow" value="partial-flow">
+                                                <label class="form-check-label" for="pipe-partial-flow">
+                                                    Partial pipe flow
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="pipe-calc-type" id="pipe-find-depth" value="find-depth">
+                                                <label class="form-check-label" for="pipe-find-depth">
+                                                    Find normal depth for given flow
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="pipe-depth-group" class="form-group" style="display: none;">
+                                            <label for="pipe-depth">Flow depth (ft):</label>
+                                            <input type="number" id="pipe-depth" class="form-control" min="0.01" step="0.1" value="1.5">
+                                        </div>
+                                        
+                                        <div id="pipe-target-flow-group" class="form-group" style="display: none;">
+                                            <label for="pipe-target-flow">Target flow (cfs):</label>
+                                            <input type="number" id="pipe-target-flow" class="form-control" min="0.1" step="1.0" value="10.0">
+                                        </div>
+                                        
+                                        <button id="calculate-pipe" class="btn btn-primary btn-calculate">Calculate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card results-card" id="pipe-results" style="display: none;">
+                                    <div class="card-header">Results</div>
+                                    <div class="card-body" id="pipe-results-body">
+                                        <!-- Results will be displayed here -->
+                                    </div>
+                                </div>
+                                <div class="plot-container" id="pipe-plot" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Box Culvert Tab -->
+                    <div class="tab-pane fade" id="box" role="tabpanel" aria-labelledby="box-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Input Parameters</div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label for="box-material">Select culvert material:</label>
+                                            <select id="box-material" class="form-select material-select">
+                                                <option value="concrete_smooth">Concrete (Smooth)</option>
+                                                <option value="concrete_rough">Concrete (Rough)</option>
+                                                <option value="corrugated_metal">Corrugated Metal</option>
+                                                <option value="hdpe_smooth">HDPE (Smooth)</option>
+                                                <option value="pvc">PVC</option>
+                                                <option value="earth_clean">Earth (Clean)</option>
+                                                <option value="earth_with_gravel">Earth with Gravel</option>
+                                                <option value="natural_streams">Natural Streams</option>
+                                                <option value="rock_cut">Rock Cut</option>
+                                                <option value="brush">Brush</option>
+                                                <option value="riprap">Riprap</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="" id="box-custom-n">
+                                            <label class="form-check-label" for="box-custom-n">
+                                                Use custom roughness coefficient
+                                            </label>
+                                        </div>
+                                        <div id="box-custom-n-group" class="custom-n-group">
+                                            <div class="form-group">
+                                                <label for="box-roughness">Manning's n value:</label>
+                                                <input type="number" id="box-roughness" class="form-control" min="0.001" max="0.1" step="0.001" value="0.013">
+                                            </div>
+                                        </div>
+                                        <div id="box-n-value-display">Manning's n value: <span id="box-n-value">0.012</span></div>
+                                        
+                                        <div class="form-group mt-3">
+                                            <label for="box-width">Culvert width (ft):</label>
+                                            <input type="number" id="box-width" class="form-control" min="0.5" max="30.0" step="0.5" value="6.0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="box-height">Culvert height (ft):</label>
+                                            <input type="number" id="box-height" class="form-control" min="0.5" max="20.0" step="0.5" value="4.0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="box-slope">Channel slope (ft/ft):</label>
+                                            <input type="number" id="box-slope" class="form-control" min="0.0001" max="0.1" step="0.0001" value="0.01">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Calculation type:</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="box-calc-type" id="box-full
